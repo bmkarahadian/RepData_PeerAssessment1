@@ -9,10 +9,14 @@ activity <-
 #2. histogram of total steps per day
 activity %>%
     group_by(date) %>%
+    summarize(tot_steps = sum(steps, na.rm = TRUE))
+
+
+activity %>%
+    group_by(date) %>%
     summarize(tot_steps = sum(steps, na.rm = TRUE)) %>%
     ggplot(aes(date, tot_steps)) + geom_col() +
     xlab("Date") + ylab("Total Steps")
-
 
 #3. mean and median number of steps per day
 activity %>%
@@ -32,11 +36,22 @@ activity %>%
 activity %>%
     group_by(interval) %>%
     summarize(avg_steps = mean(steps, na.rm = TRUE)) %>%
+    ggplot(aes(interval, avg_steps)) +
+    geom_line() +
+    xlab("Interval") + ylab("Average Number of Steps")
+
+activity %>%
+    group_by(interval) %>%
+    summarize(avg_steps = mean(steps, na.rm = TRUE)) %>%
     arrange(desc(avg_steps)) %>%
     `[`(1,)
 
 
 #6. impute missing data
+activity %>%
+    filter(is.na(steps)) %>%
+    nrow()
+
 activity %>%
     group_by(date) %>%
     summarize(miss = sum(is.na(steps))) %>%
@@ -61,6 +76,16 @@ activity %>%
     filter(interval == 1830) %>%
     ggplot(aes(date, steps)) +
     geom_point()
+
+less_int <- 
+    seq(from = 0, by = 25, length.out = length(unique(activity$interval)) / 5)
+
+activity %>%
+    filter(interval %in% less_int) %>%
+    mutate(interval = factor(interval)) %>%
+    ggplot(aes(interval, steps)) + geom_boxplot()
+
+
 
 activity %>%
     group_by(interval) %>%
@@ -94,5 +119,5 @@ act_imp %>%
            class = factor(class)) %>%
     group_by(class, interval) %>%
     summarize(avg_steps = mean(steps)) %>%
-    ggplot(aes(interval, avg_steps)) + geom_col() + facet_wrap(~class) +
+    ggplot(aes(interval, avg_steps)) + geom_line() + facet_wrap(~class) +
     xlab("Interval") + ylab("Average Number of Steps")
